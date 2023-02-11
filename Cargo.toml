@@ -1,0 +1,9 @@
+[package]
+name = "poem-ext"
+version = "0.1.0"
+description = "Extension crate for poem/poem-openapi"
+license = "MIT"
+documentation = "https://docs.rs/poem-ext/"
+edition = "2021"
+
+[dependencies]
