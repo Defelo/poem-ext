@@ -5,4 +5,5 @@
 #![warn(missing_docs)]
 
 mod auth;
+pub mod patch_value;
 pub mod response;
