@@ -178,25 +178,27 @@ pub trait MetaResponsesExt {
 /// Endpoints that return a [`Response<T, Auth>`] will now additionally list all `AuthError` and `OtherError` variants in their OpenAPI documentation.
 #[macro_export]
 macro_rules! add_response_schemas {
-    ($type:ty, $($responses:ty),+) => {
+    ($type:ty) => {$crate::add_response_schemas!($type,);};
+    ($type:ty, $($responses:ty),*) => {
         impl $crate::response::MetaResponsesExt for $type {
             type Iter = Vec<poem_openapi::registry::MetaResponse>;
             fn responses() -> Self::Iter {
                 std::iter::empty()
-                    $(.chain(<$responses as poem_openapi::ApiResponse>::meta().responses))+
+                    $(.chain(<$responses as poem_openapi::ApiResponse>::meta().responses))*
                 .collect()
             }
+            #[allow(unused_variables)]
             fn register(registry: &mut poem_openapi::registry::Registry) {
                 $(
                     <$responses as poem_openapi::ApiResponse>::register(registry);
-                )+
+                )*
             }
         }
     };
 }
 
 // Implement `MetaResponsesExt` on unit, so we can use it as a default for the `A` type parameter in `Response`.
-add_response_schemas!((), ());
+add_response_schemas!(());
 
 #[cfg(test)]
 mod tests {
