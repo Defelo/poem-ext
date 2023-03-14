@@ -109,7 +109,7 @@ macro_rules! __response__response_type {
     };
     ($name:ident, $var:ident, error,) => {
         $crate::response::macros::paste! {
-            $crate::static_string!([< __ $name __ $var __Error >], stringify!([< $var:snake >]));
+            $crate::static_string!(pub [< __ $name __ $var __Error >], stringify!([< $var:snake >]));
             #[derive(Debug, poem_openapi::Object)]
             pub struct [< __ $name __ $var >] {
                 pub error: [< __ $name __ $var __Error >],
@@ -125,7 +125,7 @@ macro_rules! __response__response_type {
     };
     ($name:ident, $var:ident, error, $details:path) => {
         $crate::response::macros::paste! {
-            $crate::static_string!([< __ $name __ $var __Error >], stringify!([< $var:snake >]));
+            $crate::static_string!(pub [< __ $name __ $var __Error >], stringify!([< $var:snake >]));
             #[derive(Debug, poem_openapi::Object)]
             pub struct [< __ $name __ $var >] {
                 pub error: [< __ $name __ $var __Error >],

@@ -24,9 +24,9 @@
 /// ```
 #[macro_export]
 macro_rules! static_string {
-    ($name:ident, $str:expr) => {
+    ($vis:vis $name:ident, $str:expr) => {
         #[derive(Debug)]
-        pub struct $name;
+        $vis struct $name;
 
         impl Default for $name {
             fn default() -> Self {
