@@ -11,6 +11,9 @@ use poem_openapi::{
     ApiResponse, Object,
 };
 
+#[doc(hidden)]
+pub mod macros;
+
 /// Enhanced response type for registering additional response schemas for OpenAPI documentation and handling bad request errors.
 ///
 /// Wrapping the actual return type of an endpoint in this type currently adds the following

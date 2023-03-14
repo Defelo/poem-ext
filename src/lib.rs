@@ -7,3 +7,4 @@
 mod auth;
 pub mod patch_value;
 pub mod response;
+mod static_string;
