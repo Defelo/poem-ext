@@ -11,6 +11,8 @@ use poem_openapi::{
     ApiResponse, Object,
 };
 
+use crate::static_string;
+
 #[doc(hidden)]
 pub mod macros;
 
@@ -77,8 +79,11 @@ impl<T, A> From<T> for InnerResponse<T, A> {
     }
 }
 
+static_string!(UnprocessableContent, "unprocessable_content");
+
 #[derive(Debug, Object)]
 struct BadRequestError {
+    error: UnprocessableContent,
     reason: String,
 }
 
@@ -127,10 +132,15 @@ where
         match self.0 {
             InnerResponseData::Ok { value, _auth } => value.into_response(),
             InnerResponseData::BadRequest { error } => {
-                BadRequestResponse::UnprocessableContent(Json(BadRequestError {
-                    reason: error.to_string(),
-                }))
-                .into_response()
+                if error.status() == 400 {
+                    BadRequestResponse::UnprocessableContent(Json(BadRequestError {
+                        error: UnprocessableContent,
+                        reason: error.to_string(),
+                    }))
+                    .into_response()
+                } else {
+                    error.into_response()
+                }
             }
         }
     }
