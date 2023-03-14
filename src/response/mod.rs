@@ -59,8 +59,10 @@ pub mod macros;
 pub type Response<T, A = ()> = poem::Result<InnerResponse<T, A>>;
 
 #[doc(hidden)]
+#[derive(Debug)]
 pub struct InnerResponse<T, A>(InnerResponseData<T, A>);
 
+#[derive(Debug)]
 enum InnerResponseData<T, A> {
     Ok { value: T, _auth: PhantomData<A> },
     BadRequest { error: poem::Error },
@@ -75,12 +77,12 @@ impl<T, A> From<T> for InnerResponse<T, A> {
     }
 }
 
-#[derive(Object)]
+#[derive(Debug, Object)]
 struct BadRequestError {
     reason: String,
 }
 
-#[derive(ApiResponse)]
+#[derive(Debug, ApiResponse)]
 enum BadRequestResponse {
     /// Unprocessable Content
     #[oai(status = 422)]

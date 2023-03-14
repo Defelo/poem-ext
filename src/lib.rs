@@ -2,7 +2,7 @@
 
 #![forbid(unsafe_code)]
 #![warn(clippy::dbg_macro, clippy::use_debug)]
-#![warn(missing_docs)]
+#![warn(missing_docs, missing_debug_implementations)]
 
 mod auth;
 pub mod patch_value;

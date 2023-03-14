@@ -42,13 +42,13 @@ pub use paste::paste;
 /// });
 /// # }
 ///
-/// #[derive(Object)]
+/// #[derive(Debug, Object)]
 /// pub struct Data {
 ///     foo: i32,
 ///     bar: String,
 /// }
 ///
-/// #[derive(Object)]
+/// #[derive(Debug, Object)]
 /// pub struct ConflictDetails {
 ///     test: bool,
 /// }
@@ -70,7 +70,7 @@ macro_rules! response {
                     $crate::__response__response_type!($name, $var, $($error)?, $($data)?);
                 )*
 
-                #[derive(::poem_openapi::ApiResponse)]
+                #[derive(Debug, ::poem_openapi::ApiResponse)]
                 pub(super) enum $name {
                     $(
                         $(#[doc = $doc])?
@@ -110,7 +110,7 @@ macro_rules! __response__response_type {
     ($name:ident, $var:ident, error,) => {
         $crate::response::macros::paste! {
             $crate::static_string!([< __ $name __ $var __Error >], stringify!([< $var:snake >]));
-            #[derive(poem_openapi::Object)]
+            #[derive(Debug, poem_openapi::Object)]
             pub struct [< __ $name __ $var >] {
                 pub error: [< __ $name __ $var __Error >],
             }
@@ -126,7 +126,7 @@ macro_rules! __response__response_type {
     ($name:ident, $var:ident, error, $details:path) => {
         $crate::response::macros::paste! {
             $crate::static_string!([< __ $name __ $var __Error >], stringify!([< $var:snake >]));
-            #[derive(poem_openapi::Object)]
+            #[derive(Debug, poem_openapi::Object)]
             pub struct [< __ $name __ $var >] {
                 pub error: [< __ $name __ $var __Error >],
                 pub details: $details,
@@ -185,5 +185,5 @@ macro_rules! __response__fn {
 }
 
 #[doc(hidden)]
-#[derive(poem_openapi::Object)]
+#[derive(Debug, poem_openapi::Object)]
 pub struct Empty;
