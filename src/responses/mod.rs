@@ -242,16 +242,16 @@ macro_rules! add_response_schemas {
     ($type:ty) => {$crate::add_response_schemas!($type,);};
     ($type:ty, $($responses:ty),*) => {
         impl $crate::responses::MetaResponsesExt for $type {
-            type Iter = Vec<poem_openapi::registry::MetaResponse>;
+            type Iter = ::std::vec::Vec<::poem_openapi::registry::MetaResponse>;
             fn responses() -> Self::Iter {
-                std::iter::empty()
-                    $(.chain(<$responses as poem_openapi::ApiResponse>::meta().responses))*
+                ::std::iter::empty()
+                    $(.chain(<$responses as ::poem_openapi::ApiResponse>::meta().responses))*
                 .collect()
             }
             #[allow(unused_variables)]
-            fn register(registry: &mut poem_openapi::registry::Registry) {
+            fn register(registry: &mut ::poem_openapi::registry::Registry) {
                 $(
-                    <$responses as poem_openapi::ApiResponse>::register(registry);
+                    <$responses as ::poem_openapi::ApiResponse>::register(registry);
                 )*
             }
         }

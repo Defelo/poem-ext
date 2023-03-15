@@ -25,10 +25,10 @@
 #[macro_export]
 macro_rules! static_string {
     ($vis:vis $name:ident, $str:expr) => {
-        #[derive(Debug)]
+        #[derive(::std::fmt::Debug)]
         $vis struct $name;
 
-        impl Default for $name {
+        impl ::std::default::Default for $name {
             fn default() -> Self {
                 Self
             }
@@ -42,7 +42,7 @@ macro_rules! static_string {
             type RawElementValueType = &'static str;
 
             fn name() -> ::std::borrow::Cow<'static, str> {
-                stringify!($name).into()
+                ::std::stringify!($name).into()
             }
 
             fn schema_ref() -> ::poem_openapi::registry::MetaSchemaRef {
@@ -50,34 +50,34 @@ macro_rules! static_string {
                     ::poem_openapi::registry::MetaSchema {
                         ty: "string",
                         read_only: true,
-                        default: Some($str.into()),
+                        default: ::std::option::Option::Some($str.into()),
                         ..::poem_openapi::registry::MetaSchema::ANY
                     },
                 ))
             }
 
-            fn as_raw_value(&self) -> Option<&Self::RawValueType> {
-                Some(&$str)
+            fn as_raw_value(&self) -> ::std::option::Option<&Self::RawValueType> {
+                ::std::option::Option::Some(&$str)
             }
 
             fn raw_element_iter<'a>(
                 &'a self,
-            ) -> ::std::boxed::Box<dyn Iterator<Item = &'a Self::RawElementValueType> + 'a> {
+            ) -> ::std::boxed::Box<dyn ::std::iter::Iterator<Item = &'a Self::RawElementValueType> + 'a> {
                 ::std::boxed::Box::new(self.as_raw_value().into_iter())
             }
         }
 
         impl ::poem_openapi::types::ParseFromJSON for $name {
             fn parse_from_json(
-                _value: Option<::poem_openapi::__private::serde_json::Value>,
+                _value: ::std::option::Option<::poem_openapi::__private::serde_json::Value>,
             ) -> ::poem_openapi::types::ParseResult<Self> {
-                panic!("Cannot parse static string")
+                ::std::panic!("Cannot parse static string")
             }
         }
 
         impl ::poem_openapi::types::ToJSON for $name {
-            fn to_json(&self) -> Option<poem_openapi::__private::serde_json::Value> {
-                Some(::poem_openapi::__private::serde_json::Value::String(
+            fn to_json(&self) -> ::std::option::Option<poem_openapi::__private::serde_json::Value> {
+                ::std::option::Option::Some(::poem_openapi::__private::serde_json::Value::String(
                     $str.into(),
                 ))
             }

@@ -81,7 +81,7 @@ macro_rules! response {
                     $crate::__response__response_type!($name, $var, $($error)?, $($data)?);
                 )*
 
-                #[derive(Debug, ::poem_openapi::ApiResponse)]
+                #[derive(::std::fmt::Debug, ::poem_openapi::ApiResponse)]
                 pub(super) enum $name {
                     $(
                         $(#[doc = $doc])?
@@ -120,15 +120,15 @@ macro_rules! __response__response_type {
     };
     ($name:ident, $var:ident, error,) => {
         $crate::responses::macros::paste! {
-            $crate::static_string!(pub [< __ $name __ $var __Error >], stringify!([< $var:snake >]));
-            #[derive(Debug, poem_openapi::Object)]
+            $crate::static_string!(pub [< __ $name __ $var __Error >], ::std::stringify!([< $var:snake >]));
+            #[derive(::std::fmt::Debug, ::poem_openapi::Object)]
             pub struct [< __ $name __ $var >] {
                 pub error: [< __ $name __ $var __Error >],
             }
             impl [< __ $name __ $var >] {
                 pub fn new() -> Self {
                     Self {
-                        error: Default::default(),
+                        error: ::std::default::Default::default(),
                     }
                 }
             }
@@ -136,8 +136,8 @@ macro_rules! __response__response_type {
     };
     ($name:ident, $var:ident, error, $details:ty) => {
         $crate::responses::macros::paste! {
-            $crate::static_string!(pub [< __ $name __ $var __Error >], stringify!([< $var:snake >]));
-            #[derive(Debug, poem_openapi::Object)]
+            $crate::static_string!(pub [< __ $name __ $var __Error >], ::std::stringify!([< $var:snake >]));
+            #[derive(::std::fmt::Debug, ::poem_openapi::Object)]
             pub struct [< __ $name __ $var >] {
                 pub error: [< __ $name __ $var __Error >],
                 pub details: $details,
@@ -145,7 +145,7 @@ macro_rules! __response__response_type {
             impl [< __ $name __ $var >] {
                 pub fn new(details: $details) -> Self {
                     Self {
-                        error: Default::default(),
+                        error: ::std::default::Default::default(),
                         details,
                     }
                 }

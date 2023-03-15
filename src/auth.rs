@@ -54,44 +54,44 @@
 #[macro_export]
 macro_rules! custom_auth {
     ($auth:path, $checker:expr) => {
-        #[poem::async_trait]
-        impl<'a> poem_openapi::ApiExtractor<'a> for $auth {
-            const TYPE: poem_openapi::ApiExtractorType =
-                poem_openapi::ApiExtractorType::SecurityScheme;
+        #[::poem::async_trait]
+        impl<'a> ::poem_openapi::ApiExtractor<'a> for $auth {
+            const TYPE: ::poem_openapi::ApiExtractorType =
+                ::poem_openapi::ApiExtractorType::SecurityScheme;
 
             type ParamType = ();
             type ParamRawType = ();
 
             async fn from_request(
-                request: &'a poem::Request,
-                _body: &mut poem::RequestBody,
-                _param_opts: poem_openapi::ExtractParamOptions<Self::ParamType>,
-            ) -> poem::Result<Self> {
+                request: &'a ::poem::Request,
+                _body: &mut ::poem::RequestBody,
+                _param_opts: ::poem_openapi::ExtractParamOptions<Self::ParamType>,
+            ) -> ::poem::Result<Self> {
                 let output =
-                    <poem_openapi::auth::Bearer as poem_openapi::auth::BearerAuthorization>::from_request(request).ok();
+                    <::poem_openapi::auth::Bearer as ::poem_openapi::auth::BearerAuthorization>::from_request(request).ok();
                 let checker = $checker;
                 let output = checker(request, output).await?;
-                Ok(Self(output))
+                ::std::result::Result::Ok(Self(output))
             }
 
-            fn register(registry: &mut poem_openapi::registry::Registry) {
+            fn register(registry: &mut ::poem_openapi::registry::Registry) {
                 registry.create_security_scheme(
-                    stringify!($auth),
-                    poem_openapi::registry::MetaSecurityScheme {
+                    ::std::stringify!($auth),
+                    ::poem_openapi::registry::MetaSecurityScheme {
                         ty: "http",
-                        description: None,
-                        name: None,
-                        key_in: None,
-                        scheme: Some("bearer"),
-                        bearer_format: None,
-                        flows: None,
-                        openid_connect_url: None,
+                        description: ::std::option::Option::None,
+                        name: ::std::option::Option::None,
+                        key_in: ::std::option::Option::None,
+                        scheme: ::std::option::Option::Some("bearer"),
+                        bearer_format: ::std::option::Option::None,
+                        flows: ::std::option::Option::None,
+                        openid_connect_url: ::std::option::Option::None,
                     },
                 );
             }
 
-            fn security_scheme() -> Option<&'static str> {
-                Some(stringify!($auth))
+            fn security_scheme() -> ::std::option::Option<&'static str> {
+                ::std::option::Option::Some(::std::stringify!($auth))
             }
         }
     };
