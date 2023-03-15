@@ -102,7 +102,7 @@ macro_rules! __response__response_type {
             pub type [< __ $name __ $var >] = $crate::response::macros::Empty;
         }
     };
-    ($name:ident, $var:ident, , $data:path) => {
+    ($name:ident, $var:ident, , $data:ty) => {
         $crate::response::macros::paste! {
             pub type [< __ $name __ $var >] = $data;
         }
@@ -123,7 +123,7 @@ macro_rules! __response__response_type {
             }
         }
     };
-    ($name:ident, $var:ident, error, $details:path) => {
+    ($name:ident, $var:ident, error, $details:ty) => {
         $crate::response::macros::paste! {
             $crate::static_string!(pub [< __ $name __ $var __Error >], stringify!([< $var:snake >]));
             #[derive(Debug, poem_openapi::Object)]
@@ -155,7 +155,7 @@ macro_rules! __response__fn {
             }
         }
     };
-    ($name:ident, $var:ident, , $data:path) => {
+    ($name:ident, $var:ident, , $data:ty) => {
         $crate::response::macros::paste! {
             pub fn [< $var:snake >]<A>(data: $data) -> $crate::response::Response<Self, A> {
                 ::std::result::Result::Ok(
@@ -173,7 +173,7 @@ macro_rules! __response__fn {
             }
         }
     };
-    ($name:ident, $var:ident, error, $details:path) => {
+    ($name:ident, $var:ident, error, $details:ty) => {
         $crate::response::macros::paste! {
             pub fn [< $var:snake >]<A>(details: $details) -> $crate::response::Response<Self, A> {
                 ::std::result::Result::Ok(
