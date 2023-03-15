@@ -16,6 +16,13 @@ pub use paste::paste;
 /// impl Api {
 ///     #[oai(path = "/test", method = "put")]
 ///     async fn update_data(&self) -> TestResponse {
+///         fn foobar(x: bool) -> TestResponse {
+///             if x {
+///                 Test::created()
+///             } else {
+///                 Test::teapot()
+///             }
+///         }
 ///         match todo!() {
 ///             // status = 200, content = {"foo": 42, "bar": "Hello World!"}
 ///             0 => Test::ok(Data { foo: 42, bar: "Hello World!".into() }),
@@ -25,6 +32,10 @@ pub use paste::paste;
 ///             2 => Test::conflict(ConflictDetails { test: true }),
 ///             // status = 418, content = {"error": "teapot"}
 ///             3 => Test::teapot(),
+///             // status = 418, content = {"error": "teapot"}
+///             4 => Ok(foobar(false)?),
+///             // status = 201, content = {}
+///             5 => Ok(foobar(true)?),
 ///             _ => unimplemented!(),
 ///         }
 ///     }
