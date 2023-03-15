@@ -92,7 +92,7 @@ impl<T, A> From<T> for InnerResponse<T, A> {
 /// #[OpenApi]
 /// impl Api {
 ///     #[oai(path = "/test", method = "get")]
-///     async fn test(&self) -> TestResponse {
+///     async fn test(&self) -> Test::Response {
 ///         fallible_function().map_err(internal_server_error)?;
 ///         Test::ok("Hello World!")
 ///     }
