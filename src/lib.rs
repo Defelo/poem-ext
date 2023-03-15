@@ -7,5 +7,5 @@
 mod auth;
 pub mod panic_handler;
 pub mod patch_value;
-pub mod response;
+pub mod responses;
 mod static_string;

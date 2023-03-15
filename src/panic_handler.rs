@@ -26,7 +26,7 @@
 
 use poem::middleware::CatchPanic;
 
-use crate::response::{internal_server_error, ErrorResponse};
+use crate::responses::{internal_server_error, ErrorResponse};
 
 /// Custom panic handler.
 #[derive(Debug, Clone)]

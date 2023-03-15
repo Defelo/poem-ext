@@ -72,7 +72,7 @@ macro_rules! response {
             $var:ident($status:expr $(,$error:ident)?) $(=> $data:ty)?,
         )*
     }) => {
-        $crate::response::macros::paste! {
+        $crate::responses::macros::paste! {
             #[allow(non_camel_case_types, clippy::enum_variant_names)]
             mod [< __ $name:snake >] {
                 use super::*;
@@ -96,7 +96,7 @@ macro_rules! response {
                     )*
                 }
 
-                pub(super) type Response<A = ()> = $crate::response::Response<$name, A>;
+                pub(super) type Response<A = ()> = $crate::responses::Response<$name, A>;
             }
 
             $vis use [< __ $name:snake >]::$name;
@@ -109,17 +109,17 @@ macro_rules! response {
 #[macro_export]
 macro_rules! __response__response_type {
     ($name:ident, $var:ident, , ) => {
-        $crate::response::macros::paste! {
-            pub type [< __ $name __ $var >] = $crate::response::macros::Empty;
+        $crate::responses::macros::paste! {
+            pub type [< __ $name __ $var >] = $crate::responses::macros::Empty;
         }
     };
     ($name:ident, $var:ident, , $data:ty) => {
-        $crate::response::macros::paste! {
+        $crate::responses::macros::paste! {
             pub type [< __ $name __ $var >] = $data;
         }
     };
     ($name:ident, $var:ident, error,) => {
-        $crate::response::macros::paste! {
+        $crate::responses::macros::paste! {
             $crate::static_string!(pub [< __ $name __ $var __Error >], stringify!([< $var:snake >]));
             #[derive(Debug, poem_openapi::Object)]
             pub struct [< __ $name __ $var >] {
@@ -135,7 +135,7 @@ macro_rules! __response__response_type {
         }
     };
     ($name:ident, $var:ident, error, $details:ty) => {
-        $crate::response::macros::paste! {
+        $crate::responses::macros::paste! {
             $crate::static_string!(pub [< __ $name __ $var __Error >], stringify!([< $var:snake >]));
             #[derive(Debug, poem_openapi::Object)]
             pub struct [< __ $name __ $var >] {
@@ -158,17 +158,17 @@ macro_rules! __response__response_type {
 #[macro_export]
 macro_rules! __response__fn {
     ($name:ident, $var:ident, , ) => {
-        $crate::response::macros::paste! {
-            pub fn [< $var:snake >]<A>() -> $crate::response::Response<Self, A> {
+        $crate::responses::macros::paste! {
+            pub fn [< $var:snake >]<A>() -> $crate::responses::Response<Self, A> {
                 ::std::result::Result::Ok(
-                    Self::[< __ $var >](::poem_openapi::payload::Json($crate::response::macros::Empty)).into(),
+                    Self::[< __ $var >](::poem_openapi::payload::Json($crate::responses::macros::Empty)).into(),
                 )
             }
         }
     };
     ($name:ident, $var:ident, , $data:ty) => {
-        $crate::response::macros::paste! {
-            pub fn [< $var:snake >]<A>(data: $data) -> $crate::response::Response<Self, A> {
+        $crate::responses::macros::paste! {
+            pub fn [< $var:snake >]<A>(data: $data) -> $crate::responses::Response<Self, A> {
                 ::std::result::Result::Ok(
                     Self::[< __ $var >](::poem_openapi::payload::Json(data)).into(),
                 )
@@ -176,8 +176,8 @@ macro_rules! __response__fn {
         }
     };
     ($name:ident, $var:ident, error, ) => {
-        $crate::response::macros::paste! {
-            pub fn [< $var:snake >]<A>() -> $crate::response::Response<Self, A> {
+        $crate::responses::macros::paste! {
+            pub fn [< $var:snake >]<A>() -> $crate::responses::Response<Self, A> {
                 ::std::result::Result::Ok(
                     Self::[< __ $var >](::poem_openapi::payload::Json([< __ $name __ $var >]::new())).into(),
                 )
@@ -185,8 +185,8 @@ macro_rules! __response__fn {
         }
     };
     ($name:ident, $var:ident, error, $details:ty) => {
-        $crate::response::macros::paste! {
-            pub fn [< $var:snake >]<A>(details: $details) -> $crate::response::Response<Self, A> {
+        $crate::responses::macros::paste! {
+            pub fn [< $var:snake >]<A>(details: $details) -> $crate::responses::Response<Self, A> {
                 ::std::result::Result::Ok(
                     Self::[< __ $var >](::poem_openapi::payload::Json([< __ $name __ $var >]::new(details))).into(),
                 )

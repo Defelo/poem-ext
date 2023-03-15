@@ -26,7 +26,7 @@ pub mod macros;
 ///
 /// #### Example
 /// ```
-/// use poem_ext::{add_response_schemas, custom_auth, response::Response};
+/// use poem_ext::{add_response_schemas, custom_auth, responses::Response};
 /// use poem_openapi::{payload::PlainText, ApiResponse, OpenApi};
 ///
 /// struct Api;
@@ -84,8 +84,7 @@ impl<T, A> From<T> for InnerResponse<T, A> {
 ///
 /// #### Example
 /// ```
-/// use poem_ext::response::{internal_server_error, Response};
-/// use poem_ext::response;
+/// use poem_ext::{response, responses::{internal_server_error, Response}};
 /// use poem_openapi::{OpenApi, payload::PlainText};
 ///
 /// struct Api;
@@ -242,7 +241,7 @@ pub trait MetaResponsesExt {
 macro_rules! add_response_schemas {
     ($type:ty) => {$crate::add_response_schemas!($type,);};
     ($type:ty, $($responses:ty),*) => {
-        impl $crate::response::MetaResponsesExt for $type {
+        impl $crate::responses::MetaResponsesExt for $type {
             type Iter = Vec<poem_openapi::registry::MetaResponse>;
             fn responses() -> Self::Iter {
                 std::iter::empty()
