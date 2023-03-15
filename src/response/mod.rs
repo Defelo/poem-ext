@@ -10,6 +10,7 @@ use poem_openapi::{
     registry::{MetaResponse, MetaResponses, Registry},
     ApiResponse, Object,
 };
+use tracing::error;
 
 use crate::static_string;
 
@@ -79,19 +80,65 @@ impl<T, A> From<T> for InnerResponse<T, A> {
     }
 }
 
-static_string!(UnprocessableContent, "unprocessable_content");
+/// Construct an internal server error response and log the error.
+///
+/// #### Example
+/// ```
+/// use poem_ext::response::{internal_server_error, Response};
+/// use poem_ext::response;
+/// use poem_openapi::{OpenApi, payload::PlainText};
+///
+/// struct Api;
+///
+/// #[OpenApi]
+/// impl Api {
+///     #[oai(path = "/test", method = "get")]
+///     async fn test(&self) -> TestResponse {
+///         fallible_function().map_err(internal_server_error)?;
+///         Test::ok("Hello World!")
+///     }
+/// }
+///
+/// response!(Test = {
+///     Ok(200) => &'static str,
+/// });
+/// # fn fallible_function() -> Result<(), &'static str> { todo!() }
+/// ```
+pub fn internal_server_error<E>(error: E) -> ErrorResponse
+where
+    E: std::fmt::Display,
+{
+    error!("{error}");
+    ErrorResponse::InternalServerError(Json(InternalServerError {
+        error: InternalServerErrorText,
+    }))
+}
 
+static_string!(UnprocessableContentText, "unprocessable_content");
+static_string!(InternalServerErrorText, "internal_server_error");
+
+#[doc(hidden)]
 #[derive(Debug, Object)]
-struct BadRequestError {
-    error: UnprocessableContent,
+pub struct BadRequestError {
+    error: UnprocessableContentText,
     reason: String,
 }
 
+#[doc(hidden)]
+#[derive(Debug, Object)]
+pub struct InternalServerError {
+    error: InternalServerErrorText,
+}
+
+#[doc(hidden)]
 #[derive(Debug, ApiResponse)]
-enum BadRequestResponse {
+pub enum ErrorResponse {
     /// Unprocessable Content
     #[oai(status = 422)]
     UnprocessableContent(Json<BadRequestError>),
+    /// Internal Server Error
+    #[oai(status = 500)]
+    InternalServerError(Json<InternalServerError>),
 }
 
 impl<T, A> ApiResponse for InnerResponse<T, A>
@@ -107,7 +154,7 @@ where
                 .responses
                 .into_iter()
                 .chain(A::responses())
-                .chain(BadRequestResponse::meta().responses)
+                .chain(ErrorResponse::meta().responses)
                 .collect(),
         }
     }
@@ -115,7 +162,7 @@ where
     fn register(registry: &mut Registry) {
         T::register(registry);
         A::register(registry);
-        BadRequestResponse::register(registry);
+        ErrorResponse::register(registry);
     }
 
     fn from_parse_request_error(error: poem::Error) -> Self {
@@ -133,8 +180,8 @@ where
             InnerResponseData::Ok { value, _auth } => value.into_response(),
             InnerResponseData::BadRequest { error } => {
                 if error.status() == 400 {
-                    BadRequestResponse::UnprocessableContent(Json(BadRequestError {
-                        error: UnprocessableContent,
+                    ErrorResponse::UnprocessableContent(Json(BadRequestError {
+                        error: UnprocessableContentText,
                         reason: error.to_string(),
                     }))
                     .into_response()
@@ -234,6 +281,7 @@ mod tests {
         check(401, "Unauthorized");
         check(403, "Forbidden");
         check(422, "Unprocessable Content");
+        check(500, "Internal Server Error");
         assert!(responses.next().is_none());
     }
 
