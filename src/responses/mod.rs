@@ -267,22 +267,25 @@ add_response_schemas!(());
 
 #[cfg(test)]
 mod tests {
+    use itertools::Itertools;
+
     use super::*;
 
     #[test]
     fn test_response_schemas() {
         let mut responses = Response::<EndpointResponse, Auth>::meta()
             .responses
-            .into_iter();
+            .into_iter()
+            .sorted_by_key(|e| e.status);
         let mut check = |s, d| {
-            assert!(
-                matches!(responses.next().unwrap(), MetaResponse {status: Some(status), description, ..} if status == s && description == d)
-            )
+            let resp = responses.next().unwrap();
+            assert_eq!(resp.status, Some(s));
+            assert_eq!(resp.description, d);
         };
         check(200, "Ok");
-        check(404, "NotFound");
         check(401, "Unauthorized");
         check(403, "Forbidden");
+        check(404, "There are multiple possible responses with this status code:\n- FooNotFound\n- BarNotFound");
         check(422, "Unprocessable Content");
         check(500, "Internal Server Error");
         assert!(responses.next().is_none());
@@ -296,9 +299,9 @@ mod tests {
         /// Ok
         #[oai(status = 200)]
         Ok,
-        /// NotFound
+        /// FooNotFound
         #[oai(status = 404)]
-        NotFound,
+        FooNotFound,
     }
 
     #[allow(dead_code)]
@@ -310,6 +313,9 @@ mod tests {
         /// Forbidden
         #[oai(status = 403)]
         Forbidden,
+        /// BarNotFound
+        #[oai(status = 404)]
+        BarNotFound,
     }
 
     add_response_schemas!(Auth, AuthError);
