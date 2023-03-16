@@ -1,5 +1,75 @@
 //! Contains the [`PatchValue`] enum that can be used in `PATCH` endpoints to distinguish between
 //! values that should be updated and those that should remain unchanged.
+//!
+//! #### Example
+//! ```
+//! use poem_ext::{patch_value::PatchValue, responses::internal_server_error};
+//! use poem_openapi::{param::Path, payload::Json, Object, OpenApi};
+//! use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Unchanged};
+//!
+//! struct Api {
+//!     db: DatabaseConnection,
+//! }
+//!
+//! #[OpenApi]
+//! impl Api {
+//!     #[oai(path = "/user/:user_id", method = "patch")]
+//!     async fn update_user(
+//!         &self,
+//!         user_id: Path<i32>,
+//!         data: Json<UpdateUserRequest>,
+//!     ) -> UpdateUser::Response {
+//!         let Some(user) = users::Entity::find_by_id(user_id.0)
+//!             .one(&self.db)
+//!             .await
+//!             .map_err(internal_server_error)?
+//!             else { return UpdateUser::not_found(); };
+//!
+//!         users::ActiveModel {
+//!             id: Unchanged(user.id),
+//!             name: data.0.name.update(user.name),
+//!             password: data.0.password.update(user.password),
+//!         }
+//!         .update(&self.db)
+//!         .await
+//!         .map_err(internal_server_error)?;
+//!
+//!         UpdateUser::ok()
+//!     }
+//! }
+//!
+//! #[derive(Debug, Object)]
+//! pub struct UpdateUserRequest {
+//!     #[oai(validator(max_length = 255))]
+//!     pub name: PatchValue<String>,
+//!     #[oai(validator(max_length = 255))]
+//!     pub password: PatchValue<String>,
+//! }
+//! #
+//! # poem_ext::response!(UpdateUser = {
+//! #     Ok(200),
+//! #     NotFound(404),
+//! # });
+//! # mod users {
+//! #     use sea_orm::entity::prelude::*;
+//! #
+//! #     #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+//! #     #[sea_orm(table_name = "users")]
+//! #     pub struct Model {
+//! #         #[sea_orm(primary_key, auto_increment = false)]
+//! #         pub id: i32,
+//! #         #[sea_orm(column_type = "Text")]
+//! #         pub name: String,
+//! #         #[sea_orm(column_type = "Text")]
+//! #         pub password: String,
+//! #     }
+//! #
+//! #     #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+//! #     pub enum Relation {}
+//! #
+//! #     impl ActiveModelBehavior for ActiveModel {}
+//! # }
+//! ```
 
 use std::borrow::Cow;
 
