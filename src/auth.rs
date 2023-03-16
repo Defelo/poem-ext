@@ -8,7 +8,7 @@
 /// #### Example
 /// ```
 /// use poem::Request;
-/// use poem_ext::custom_auth;
+/// use poem_ext::{custom_auth, response};
 /// use poem_openapi::{auth::Bearer, payload::PlainText, ApiExtractor, ApiResponse, OpenApi};
 ///
 /// /// Contains information about the authenticated user.
@@ -18,20 +18,22 @@
 /// struct UserAuth(User);
 ///
 /// /// Response to return in case of unsuccessful authorization.
-/// #[derive(ApiResponse)]
-/// enum ErrorResponse {
-///     #[oai(status = 401)]
-///     Unauthorized,
-///     #[oai(status = 403)]
-///     Forbidden,
-/// }
+/// response!(AuthResult = {
+///     /// The user is unauthenticated.
+///     Unauthorized(401, error),
+///     /// The authenticated user is not allowed to perform this action.
+///     Forbidden(403, error),
+/// });
 ///
 /// /// Check authorization for a given request.
-/// async fn user_auth_check(_req: &Request, token: Option<Bearer>) -> Result<User, ErrorResponse> {
+/// async fn user_auth_check(
+///     _req: &Request,
+///     token: Option<Bearer>,
+/// ) -> Result<User, AuthResult::raw::Response> {
 ///     match token {
 ///         Some(Bearer { token }) if token == "secret_token" => Ok(User),
-///         Some(_) => Err(ErrorResponse::Forbidden),
-///         None => Err(ErrorResponse::Unauthorized),
+///         Some(_) => Err(AuthResult::raw::forbidden()),
+///         None => Err(AuthResult::raw::unauthorized()),
 ///     }
 /// }
 ///
@@ -100,7 +102,9 @@ macro_rules! custom_auth {
 #[cfg(test)]
 mod tests {
     use poem::Request;
-    use poem_openapi::{auth::Bearer, ApiExtractor, ApiResponse};
+    use poem_openapi::{auth::Bearer, ApiExtractor};
+
+    use crate::response;
 
     #[test]
     fn test_scheme_name() {
@@ -139,19 +143,19 @@ mod tests {
     #[derive(Debug)]
     struct UserAuth(User);
 
-    #[derive(ApiResponse)]
-    enum Response {
-        #[oai(status = 401)]
-        Unauthorized,
-        #[oai(status = 403)]
-        Forbidden,
-    }
+    response!(UserAuthResult = {
+        Unauthorized(401, error),
+        Forbidden(403, error),
+    });
 
-    async fn user_auth_check(_req: &Request, token: Option<Bearer>) -> Result<User, Response> {
+    async fn user_auth_check(
+        _req: &Request,
+        token: Option<Bearer>,
+    ) -> Result<User, UserAuthResult::raw::Response> {
         match token {
             Some(Bearer { token }) if token == "secret_token" => Ok(User),
-            Some(_) => Err(Response::Forbidden),
-            None => Err(Response::Unauthorized),
+            Some(_) => Err(UserAuthResult::raw::forbidden()),
+            None => Err(UserAuthResult::raw::unauthorized()),
         }
     }
 
