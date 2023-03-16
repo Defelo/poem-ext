@@ -91,7 +91,7 @@ macro_rules! response {
         )*
     }) => {
         $crate::responses::macros::paste! {
-            #[allow(non_snake_case, non_camel_case_types, clippy::enum_variant_names)]
+            #[allow(unused_imports, non_snake_case, non_camel_case_types, clippy::enum_variant_names)]
             $vis mod $name {
                 use super::*;
 
