@@ -14,8 +14,11 @@ use tracing::error;
 
 use crate::static_string;
 
+use self::merge_schemas::merge_meta_responses;
+
 #[doc(hidden)]
 pub mod macros;
+mod merge_schemas;
 
 /// Enhanced response type for registering additional response schemas for OpenAPI documentation and handling bad request errors.
 ///
@@ -149,12 +152,13 @@ where
 
     fn meta() -> MetaResponses {
         MetaResponses {
-            responses: T::meta()
-                .responses
-                .into_iter()
-                .chain(A::responses())
-                .chain(ErrorResponse::meta().responses)
-                .collect(),
+            responses: merge_meta_responses(
+                T::meta()
+                    .responses
+                    .into_iter()
+                    .chain(A::responses())
+                    .chain(ErrorResponse::meta().responses),
+            ),
         }
     }
 
