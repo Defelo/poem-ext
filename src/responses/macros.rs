@@ -28,6 +28,21 @@ pub use paste::paste;
 ///             _ => unimplemented!(),
 ///         }
 ///     }
+///
+///     #[oai(path = "/test", method = "put")]
+///     async fn update_data_raw(&self) -> poem_ext::responses::Response<Test::raw::Response> {
+///         Ok(match todo!() {
+///             // status = 200, content = {"foo": 42, "bar": "Hello World!"}
+///             0 => Test::raw::ok(Data { foo: 42, bar: "Hello World!".into() }),
+///             // status = 201, content = {}
+///             1 => Test::raw::created(),
+///             // status = 409, content = {"error": "conflict", "details": {"test": true}}
+///             2 => Test::raw::conflict(ConflictDetails { test: true }),
+///             // status = 418, content = {"error": "teapot"}
+///             3 => Test::raw::teapot(),
+///             _ => unimplemented!(),
+///         }.into())
+///     }
 /// }
 ///
 /// response!(Test = {
@@ -69,17 +84,30 @@ pub use paste::paste;
 /// The signature of the generated module for this example would look roughly like this:
 /// ```
 /// mod Test {
-/// # pub type Data = ();
-/// # pub type ConflictDetails = ();
-/// # pub enum ApiResponseEnum {}
-///     pub type Response = poem::Result<ApiResponseEnum>;
+/// #   pub type Data = ();
+/// #   pub type ConflictDetails = ();
+/// #   pub enum ApiResponseEnum {}
+///     type Response<A> = poem_ext::responses::Response<raw::Response, A>;
 ///
-/// # extern {
-///     pub fn ok(data: Data) -> Response;
-///     pub fn created() -> Response;
-///     pub fn conflict(teapot: ConflictDetails) -> Response;
-///     pub fn teapot() -> Response;
-/// # }
+/// #   trait _1 {
+///     fn ok<A>(data: Data) -> Response<A>;
+///     fn created<A>() -> Response<A>;
+///     fn conflict<A>(teapot: ConflictDetails) -> Response<A>;
+///     fn teapot<A>() -> Response<A>;
+/// #   }
+///
+///     pub mod raw {
+/// #       use super::*;
+/// #       pub
+///         type Response = ApiResponseEnum;
+///
+/// #       trait _2 {
+///         fn ok(data: Data) -> Response;
+///         fn created() -> Response;
+///         fn conflict(teapot: ConflictDetails) -> Response;
+///         fn teapot() -> Response;
+/// #       }
+///     }
 /// }
 /// ```
 #[macro_export]
@@ -91,7 +119,7 @@ macro_rules! response {
         )*
     }) => {
         $crate::responses::macros::paste! {
-            #[allow(unused_imports, non_snake_case, non_camel_case_types, clippy::enum_variant_names)]
+            #[allow(dead_code, unused_imports, non_snake_case, non_camel_case_types, clippy::enum_variant_names)]
             $vis mod $name {
                 use super::*;
 
@@ -107,12 +135,22 @@ macro_rules! response {
                         $(
                             $(#[doc = $doc])?
                             #[oai(status = $status)]
-                            [< __ $var >](::poem_openapi::payload::Json<[< __ $name __ $var >]>),
+                            $var(::poem_openapi::payload::Json<[< __ $name __ $var >]>),
                         )*
                     }
                 }
 
-                pub type Response<A = ()> = $crate::responses::Response<self::__inner::$name, A>;
+                pub mod raw {
+                    use super::*;
+
+                    pub type Response = super::__inner::$name;
+                    $(
+                        $crate::__response__raw_fn!($name, $var, $($error)?, $($data)?);
+                    )*
+                }
+
+                pub type Response<A = ()> = $crate::responses::Response<self::raw::Response, A>;
+
                 $(
                     $crate::__response__fn!($name, $var, $($error)?, $($data)?);
                 )*
@@ -137,15 +175,13 @@ macro_rules! __response__response_type {
     ($name:ident, $var:ident, error,) => {
         $crate::responses::macros::paste! {
             $crate::static_string!(pub [< __ $name __ $var __Error >], ::std::stringify!([< $var:snake >]));
-            #[derive(::std::fmt::Debug, ::poem_openapi::Object)]
+            #[derive(::std::fmt::Debug, ::std::default::Default, ::poem_openapi::Object)]
             pub struct [< __ $name __ $var >] {
                 pub error: [< __ $name __ $var __Error >],
             }
             impl [< __ $name __ $var >] {
                 pub fn new() -> Self {
-                    Self {
-                        error: ::std::default::Default::default(),
-                    }
+                    Self::default()
                 }
             }
         }
@@ -172,40 +208,65 @@ macro_rules! __response__response_type {
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! __response__fn {
+macro_rules! __response__raw_fn {
     ($name:ident, $var:ident, , ) => {
         $crate::responses::macros::paste! {
-            pub fn [< $var:snake >]<A>() -> $crate::responses::Response<self::__inner::$name, A> {
-                ::std::result::Result::Ok(
-                    self::__inner::$name::[< __ $var >](::poem_openapi::payload::Json($crate::responses::macros::Empty)).into(),
-                )
+            pub fn [< $var:snake >]() -> Response {
+                Response::$var(::poem_openapi::payload::Json($crate::responses::macros::Empty))
             }
         }
     };
     ($name:ident, $var:ident, , $data:ty) => {
         $crate::responses::macros::paste! {
-            pub fn [< $var:snake >]<A>(data: $data) -> $crate::responses::Response<self::__inner::$name, A> {
-                ::std::result::Result::Ok(
-                    self::__inner::$name::[< __ $var >](::poem_openapi::payload::Json(data)).into(),
-                )
+            pub fn [< $var:snake >](data: $data) -> Response {
+                Response::$var(::poem_openapi::payload::Json(data))
             }
         }
     };
     ($name:ident, $var:ident, error, ) => {
         $crate::responses::macros::paste! {
-            pub fn [< $var:snake >]<A>() -> $crate::responses::Response<self::__inner::$name, A> {
-                ::std::result::Result::Ok(
-                    self::__inner::$name::[< __ $var >](::poem_openapi::payload::Json(self::__inner::[< __ $name __ $var >]::new())).into(),
-                )
+            pub fn [< $var:snake >]() -> Response {
+                Response::$var(::poem_openapi::payload::Json(super::__inner::[< __ $name __ $var >]::new()))
             }
         }
     };
     ($name:ident, $var:ident, error, $details:ty) => {
         $crate::responses::macros::paste! {
-            pub fn [< $var:snake >]<A>(details: $details) -> $crate::responses::Response<self::__inner::$name, A> {
-                ::std::result::Result::Ok(
-                    self::__inner::$name::[< __ $var >](::poem_openapi::payload::Json(self::__inner::[< __ $name __ $var >]::new(details))).into(),
-                )
+            pub fn [< $var:snake >](details: $details) -> Response {
+                Response::$var(::poem_openapi::payload::Json(super::__inner::[< __ $name __ $var >]::new(details)))
+            }
+        }
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __response__fn {
+    ($name:ident, $var:ident, , ) => {
+        $crate::responses::macros::paste! {
+            pub fn [< $var:snake >]<A>() -> Response<A> {
+                ::std::result::Result::Ok(self::raw::[< $var:snake >]().into())
+            }
+        }
+    };
+    ($name:ident, $var:ident, , $data:ty) => {
+        $crate::responses::macros::paste! {
+            pub fn [< $var:snake >]<A>(data: $data) -> Response<A> {
+                ::std::result::Result::Ok(self::raw::[< $var:snake >](data).into())
+            }
+        }
+    };
+    ($name:ident, $var:ident, error, ) => {
+        $crate::responses::macros::paste! {
+            pub fn [< $var:snake >]<A>() -> Response<A> {
+                ::std::result::Result::Ok(self::raw::[< $var:snake >]().into())
+            }
+        }
+    };
+    ($name:ident, $var:ident, error, $details:ty) => {
+        $crate::responses::macros::paste! {
+            pub fn [< $var:snake >]<A>(details: $details) -> Response<A> {
+                ::std::result::Result::Ok(self::raw::[< $var:snake >](details).into())
             }
         }
     };
