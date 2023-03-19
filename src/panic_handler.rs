@@ -26,7 +26,7 @@
 
 use poem::middleware::CatchPanic;
 
-use crate::responses::{internal_server_error, ErrorResponse};
+use crate::responses::{make_internal_server_error, ErrorResponse};
 
 /// Custom panic handler.
 #[derive(Debug, Clone)]
@@ -42,7 +42,7 @@ impl PanicHandler {
 impl poem::middleware::PanicHandler for PanicHandler {
     type Response = ErrorResponse;
 
-    fn get_response(&self, err: Box<dyn std::any::Any + Send + 'static>) -> Self::Response {
-        internal_server_error(format!("panic: {:?}", err.type_id()))
+    fn get_response(&self, _err: Box<dyn std::any::Any + Send + 'static>) -> Self::Response {
+        make_internal_server_error()
     }
 }

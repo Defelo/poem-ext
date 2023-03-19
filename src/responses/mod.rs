@@ -111,6 +111,10 @@ where
     E: std::fmt::Display,
 {
     error!("{error}");
+    make_internal_server_error()
+}
+
+pub(crate) fn make_internal_server_error() -> ErrorResponse {
     ErrorResponse::InternalServerError(Json(InternalServerError {
         error: InternalServerErrorText,
     }))
