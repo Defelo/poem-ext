@@ -102,6 +102,14 @@ impl<T> PatchValue<T> {
             Self::Unchanged => ActiveValue::Unchanged(old),
         }
     }
+
+    /// Return the new value if this is [`Set(T)`](Self::Unchanged) or the old value if [`Unchanged`](Self::Unchanged).
+    pub fn get_new<'a>(&'a self, old: &'a T) -> &'a T {
+        match self {
+            Self::Set(x) => x,
+            Self::Unchanged => old,
+        }
+    }
 }
 
 impl<T> ParseFromJSON for PatchValue<T>
