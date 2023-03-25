@@ -5,6 +5,7 @@
 #![warn(missing_docs, missing_debug_implementations)]
 
 mod auth;
+pub mod db;
 pub mod panic_handler;
 pub mod patch_value;
 pub mod responses;
