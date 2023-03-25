@@ -91,6 +91,7 @@ pub enum PatchValue<T> {
 impl<T> PatchValue<T> {
     /// Convert this type to a [`sea_orm::ActiveValue`] that can be used to construct an `ActiveModel`.
     #[cfg(feature = "sea-orm")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "sea-orm")))]
     pub fn update(self, old: T) -> ActiveValue<T>
     where
         T: Into<sea_orm::Value>,

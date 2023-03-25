@@ -5,6 +5,8 @@
 #![warn(missing_docs, missing_debug_implementations)]
 
 mod auth;
+#[cfg(feature = "sea-orm")]
+#[cfg_attr(docsrs, doc(cfg(feature = "sea-orm")))]
 pub mod db;
 pub mod panic_handler;
 pub mod patch_value;
