@@ -62,7 +62,7 @@ mod merge_schemas;
 /// # async fn auth_checker(_req: &poem::Request, _token: Option<poem_openapi::auth::Bearer>) -> Result<(), AuthError> { Ok(()) }
 /// custom_auth!(Auth, auth_checker);
 /// ```
-pub type Response<T, A = ()> = poem::Result<InnerResponse<T, A>>;
+pub type Response<T, A = ()> = Result<InnerResponse<T, A>, ErrorResponse>;
 
 #[doc(hidden)]
 #[derive(Debug)]
@@ -97,6 +97,7 @@ impl<T, A> From<T> for InnerResponse<T, A> {
 ///     #[oai(path = "/test", method = "get")]
 ///     async fn test(&self) -> Test::Response {
 ///         fallible_function().map_err(internal_server_error)?;
+///         fallible_function()?; // implicitly calls `internal_server_error`
 ///         Test::ok("Hello World!")
 ///     }
 /// }
@@ -112,6 +113,12 @@ where
 {
     error!("{error}");
     make_internal_server_error()
+}
+
+impl<T: std::fmt::Display> From<T> for ErrorResponse {
+    fn from(value: T) -> Self {
+        internal_server_error(value)
+    }
 }
 
 pub(crate) fn make_internal_server_error() -> ErrorResponse {
@@ -156,13 +163,7 @@ where
 
     fn meta() -> MetaResponses {
         MetaResponses {
-            responses: merge_meta_responses(
-                T::meta()
-                    .responses
-                    .into_iter()
-                    .chain(A::responses())
-                    .chain(ErrorResponse::meta().responses),
-            ),
+            responses: merge_meta_responses(T::meta().responses.into_iter().chain(A::responses())),
         }
     }
 

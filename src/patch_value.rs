@@ -21,8 +21,7 @@
 //!     ) -> UpdateUser::Response {
 //!         let Some(user) = users::Entity::find_by_id(user_id.0)
 //!             .one(&self.db)
-//!             .await
-//!             .map_err(internal_server_error)?
+//!             .await?
 //!             else { return UpdateUser::not_found(); };
 //!
 //!         users::ActiveModel {
@@ -31,8 +30,7 @@
 //!             password: data.0.password.update(user.password),
 //!         }
 //!         .update(&self.db)
-//!         .await
-//!         .map_err(internal_server_error)?;
+//!         .await?;
 //!
 //!         UpdateUser::ok()
 //!     }
