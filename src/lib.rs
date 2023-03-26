@@ -3,6 +3,7 @@
 #![forbid(unsafe_code)]
 #![warn(clippy::dbg_macro, clippy::use_debug)]
 #![warn(missing_docs, missing_debug_implementations)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 mod auth;
 #[cfg(feature = "sea-orm")]
