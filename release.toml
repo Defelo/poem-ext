@@ -1,0 +1,12 @@
+shared-version = true
+
+sign-commit = true
+pre-release-commit-message = "v{{version}}"
+
+sign-tag = true
+tag-prefix = ""
+tag-message = "v{{version}}"
+
+publish = true
+
+allow-branch = ["develop"]
