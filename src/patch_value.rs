@@ -109,6 +109,14 @@ impl<T> PatchValue<T> {
             Self::Unchanged => old,
         }
     }
+
+    /// Convert a [`PatchValue<T>`] to a [`PatchValue<U>`].
+    pub fn map<U>(self, f: impl FnOnce(T) -> U) -> PatchValue<U> {
+        match self {
+            PatchValue::Set(x) => PatchValue::Set(f(x)),
+            PatchValue::Unchanged => PatchValue::Unchanged,
+        }
+    }
 }
 
 impl<T> ParseFromJSON for PatchValue<T>
