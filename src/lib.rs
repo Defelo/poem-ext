@@ -1,5 +1,4 @@
-//! Extension crate for [poem]/[poem_openapi]
-
+#![doc = include_str!("../README.md")]
 #![forbid(unsafe_code)]
 #![warn(clippy::dbg_macro, clippy::use_debug)]
 #![warn(missing_docs, missing_debug_implementations)]
