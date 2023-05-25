@@ -10,4 +10,6 @@ pub mod db;
 pub mod panic_handler;
 pub mod patch_value;
 pub mod responses;
+#[cfg(feature = "shield")]
+pub mod shield_mw;
 mod static_string;
