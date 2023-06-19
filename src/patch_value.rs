@@ -180,3 +180,9 @@ where
         }
     }
 }
+
+impl<T> Default for PatchValue<T> {
+    fn default() -> Self {
+        Self::Unchanged
+    }
+}
