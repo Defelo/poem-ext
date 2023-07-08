@@ -81,6 +81,7 @@ use sea_orm::ActiveValue;
 /// Can be used as a parameter in `PATCH` endpoints to distinguish between values that should
 /// be updated and those that should remain unchanged.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum PatchValue<T> {
     /// Update the value to the contained `T`.
     Set(T),
