@@ -1,5 +1,6 @@
-//! Contains the [`PatchValue`] enum that can be used in `PATCH` endpoints to distinguish between
-//! values that should be updated and those that should remain unchanged.
+//! Contains the [`PatchValue`] enum that can be used in `PATCH` endpoints to
+//! distinguish between values that should be updated and those that should
+//! remain unchanged.
 //!
 //! #### Example
 //! ```
@@ -78,19 +79,20 @@ use poem_openapi::{
 #[cfg(feature = "sea-orm")]
 use sea_orm::ActiveValue;
 
-/// Can be used as a parameter in `PATCH` endpoints to distinguish between values that should
-/// be updated and those that should remain unchanged.
-#[derive(Debug, Clone, Copy)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+/// Can be used as a parameter in `PATCH` endpoints to distinguish between
+/// values that should be updated and those that should remain unchanged.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PatchValue<T> {
     /// Update the value to the contained `T`.
     Set(T),
     /// Don't change the value.
+    #[default]
     Unchanged,
 }
 
 impl<T> PatchValue<T> {
-    /// Convert this type to a [`sea_orm::ActiveValue`] that can be used to construct an `ActiveModel`.
+    /// Convert this type to a [`sea_orm::ActiveValue`] that can be used to
+    /// construct an `ActiveModel`.
     #[cfg(feature = "sea-orm")]
     pub fn update(self, old: T) -> ActiveValue<T>
     where
@@ -102,7 +104,8 @@ impl<T> PatchValue<T> {
         }
     }
 
-    /// Return the new value if this is [`Set(T)`](Self::Unchanged) or the old value if [`Unchanged`](Self::Unchanged).
+    /// Return the new value if this is [`Set(T)`](Self::Unchanged) or the old
+    /// value if [`Unchanged`](Self::Unchanged).
     pub fn get_new<'a>(&'a self, old: &'a T) -> &'a T {
         match self {
             Self::Set(x) => x,
@@ -182,8 +185,76 @@ where
     }
 }
 
-impl<T> Default for PatchValue<T> {
-    fn default() -> Self {
-        Self::Unchanged
+#[cfg(feature = "serde")]
+impl<T> serde::Serialize for PatchValue<T>
+where
+    T: serde::Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            PatchValue::Set(x) => Some(x),
+            PatchValue::Unchanged => None,
+        }
+        .serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::Deserialize<'de> for PatchValue<T>
+where
+    T: serde::Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        match Option::<T>::deserialize(deserializer) {
+            Ok(Some(x)) => Ok(Self::Set(x)),
+            Ok(None) => Ok(Self::Unchanged),
+            Err(err) => Err(err),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde::{Deserialize, Serialize};
+
+    use super::{PatchValue::*, *};
+
+    #[test]
+    fn serialize() {
+        assert_eq!(
+            serde_json::to_string(&Test { value: Unchanged }).unwrap(),
+            r#"{"value":null}"#
+        );
+        assert_eq!(
+            serde_json::to_string(&Test { value: Set(42) }).unwrap(),
+            r#"{"value":42}"#
+        );
+    }
+
+    #[test]
+    fn deserialize() {
+        assert_eq!(
+            serde_json::from_str::<Test>(r#"{}"#).unwrap(),
+            Test { value: Unchanged }
+        );
+        assert_eq!(
+            serde_json::from_str::<Test>(r#"{"value":null}"#).unwrap(),
+            Test { value: Unchanged }
+        );
+        assert_eq!(
+            serde_json::from_str::<Test>(r#"{"value":42}"#).unwrap(),
+            Test { value: Set(42) }
+        );
+    }
+
+    #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+    struct Test {
+        value: PatchValue<i32>,
     }
 }
