@@ -1,4 +1,5 @@
-//! Contains a middleware that prevents endpoint handlers from being canceled if the connection is closed.
+//! Contains a middleware that prevents endpoint handlers from being canceled if
+//! the connection is closed.
 
 use std::sync::Arc;
 
@@ -9,9 +10,10 @@ use tokio_shield::Shield;
 ///
 /// #### Example
 /// ```no_run
+/// use std::time::Duration;
+///
 /// use poem_ext::shield_mw::shield;
 /// use poem_openapi::OpenApi;
-/// use std::time::Duration;
 ///
 /// struct Api;
 ///
@@ -32,10 +34,11 @@ pub fn shield<E: Endpoint + 'static>(ep: E) -> ShieldEndpoint<E> {
 ///
 /// #### Example
 /// ```rust
+/// use std::time::Duration;
+///
 /// use poem::{EndpointExt, Route};
 /// use poem_ext::shield_mw::ShieldMiddleware;
 /// use poem_openapi::{OpenApi, OpenApiService};
-/// use std::time::Duration;
 ///
 /// struct Api;
 ///

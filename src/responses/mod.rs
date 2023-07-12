@@ -1,5 +1,6 @@
-//! Improve endpoint documentation by adding response schemas to the OpenAPI spec that might be
-//! returned by an [authorization dependency](crate::custom_auth!), a bad request handler or other
+//! Improve endpoint documentation by adding response schemas to the OpenAPI
+//! spec that might be returned by an [authorization
+//! dependency](crate::custom_auth!), a bad request handler or other
 //! middlewares.
 
 use std::marker::PhantomData;
@@ -12,19 +13,20 @@ use poem_openapi::{
 };
 use tracing::error;
 
-use crate::static_string;
-
 use self::merge_schemas::merge_meta_responses;
+use crate::static_string;
 
 #[doc(hidden)]
 pub mod macros;
 mod merge_schemas;
 
-/// Enhanced response type for registering additional response schemas for OpenAPI documentation and handling bad request errors.
+/// Enhanced response type for registering additional response schemas for
+/// OpenAPI documentation and handling bad request errors.
 ///
-/// Wrapping the actual return type of an endpoint in this type currently adds the following
-/// response schemas to the endpoint's OpenAPI documentation:
-/// 1. Anything defined by the [`MetaResponsesExt`] trait implementation of the supplied Authorization type
+/// Wrapping the actual return type of an endpoint in this type currently adds
+/// the following response schemas to the endpoint's OpenAPI documentation:
+/// 1. Anything defined by the [`MetaResponsesExt`] trait implementation of the
+///    supplied Authorization type
 /// 2. The response schema for an `Unprocessable Content` error
 ///
 /// #### Example
@@ -203,7 +205,8 @@ where
 
 /// Trait for adding additional response schemas using the [`Response`] type.
 ///
-/// The easiest way to implement this trait for a type is to use the [`add_response_schemas!`](crate::add_response_schemas!) macro.
+/// The easiest way to implement this trait for a type is to use the
+/// [`add_response_schemas!`](crate::add_response_schemas!) macro.
 pub trait MetaResponsesExt {
     /// Iterator type for [`Self::responses()`] return value
     type Iter: IntoIterator<Item = MetaResponse>;
@@ -213,7 +216,8 @@ pub trait MetaResponsesExt {
     fn register(registry: &mut Registry);
 }
 
-/// Implement [`MetaResponsesExt`] for a type to add additional response schemas to an endpoint by using the [`Response`] type.
+/// Implement [`MetaResponsesExt`] for a type to add additional response schemas
+/// to an endpoint by using the [`Response`] type.
 ///
 /// #### Example
 /// ```
@@ -245,7 +249,8 @@ pub trait MetaResponsesExt {
 /// add_response_schemas!(Auth, AuthError, OtherError);
 /// ```
 ///
-/// Endpoints that return a [`Response<T, Auth>`] will now additionally list all `AuthError` and `OtherError` variants in their OpenAPI documentation.
+/// Endpoints that return a [`Response<T, Auth>`] will now additionally list all
+/// `AuthError` and `OtherError` variants in their OpenAPI documentation.
 #[macro_export]
 macro_rules! add_response_schemas {
     ($type:ty) => {$crate::add_response_schemas!($type,);};
@@ -267,7 +272,8 @@ macro_rules! add_response_schemas {
     };
 }
 
-// Implement `MetaResponsesExt` on unit, so we can use it as a default for the `A` type parameter in `Response`.
+// Implement `MetaResponsesExt` on unit, so we can use it as a default for the
+// `A` type parameter in `Response`.
 add_response_schemas!(());
 
 #[cfg(test)]
@@ -290,7 +296,11 @@ mod tests {
         check(200, "Ok");
         check(401, "Unauthorized");
         check(403, "Forbidden");
-        check(404, "There are multiple possible responses with this status code:\n- FooNotFound\n- BarNotFound");
+        check(
+            404,
+            "There are multiple possible responses with this status code:\n- FooNotFound\n- \
+             BarNotFound",
+        );
         check(422, "Unprocessable Content");
         check(500, "Internal Server Error");
         assert!(responses.next().is_none());

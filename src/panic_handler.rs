@@ -1,11 +1,11 @@
-//! Contains a middlware that automatically responds with an internal server error whenever the
-//! current thread is panicking.
+//! Contains a middlware that automatically responds with an internal server
+//! error whenever the current thread is panicking.
 //!
 //! #### Example
 //! ```
 //! use poem::{middleware::CatchPanic, EndpointExt, Route};
 //! use poem_ext::panic_handler::PanicHandler;
-//! use poem_openapi::{OpenApi, OpenApiService, payload::PlainText};
+//! use poem_openapi::{payload::PlainText, OpenApi, OpenApiService};
 //!
 //! struct Api;
 //!

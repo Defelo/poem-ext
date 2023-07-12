@@ -20,10 +20,9 @@
 //!         user_id: Path<i32>,
 //!         data: Json<UpdateUserRequest>,
 //!     ) -> UpdateUser::Response {
-//!         let Some(user) = users::Entity::find_by_id(user_id.0)
-//!             .one(&self.db)
-//!             .await?
-//!             else { return UpdateUser::not_found(); };
+//!         let Some(user) = users::Entity::find_by_id(user_id.0).one(&self.db).await? else {
+//!             return UpdateUser::not_found();
+//!         };
 //!
 //!         users::ActiveModel {
 //!             id: Unchanged(user.id),

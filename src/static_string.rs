@@ -1,9 +1,10 @@
-/// Construct an OpenApi type that always evaluates to a static string that is set at compile time.
+/// Construct an OpenApi type that always evaluates to a static string that is
+/// set at compile time.
 ///
 /// #### Example
 /// ```
-/// use poem_openapi::{Object, types::ToJSON};
 /// use poem_ext::static_string;
+/// use poem_openapi::{types::ToJSON, Object};
 ///
 /// static_string!(NotFoundError, "not found");
 ///

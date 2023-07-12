@@ -1,8 +1,10 @@
 //! Contains a middleware that automatically creates and manages a
-//! [`sea_orm::DatabaseTransaction`](sea_orm::DatabaseTransaction) for each incoming request. The
-//! transaction is automatically [`commit()`](sea_orm::DatabaseTransaction::commit)ed if the
-//! endpoint returns a successful response or
-//! [`rollback()`](sea_orm::DatabaseTransaction::rollback)ed in case of an error.
+//! [`sea_orm::DatabaseTransaction`](sea_orm::DatabaseTransaction) for each
+//! incoming request. The transaction is automatically
+//! [`commit()`](sea_orm::DatabaseTransaction::commit)ed if the endpoint returns
+//! a successful response or
+//! [`rollback()`](sea_orm::DatabaseTransaction::rollback)ed in case of an
+//! error.
 //!
 //! #### Example
 //! ```no_run
@@ -40,7 +42,8 @@ use crate::responses::internal_server_error;
 pub type DbTxn = Arc<DatabaseTransaction>;
 
 /// A middleware for automatically creating and managing
-/// [`sea_orm::DatabaseTransaction`](sea_orm::DatabaseTransaction)s for incoming requests.
+/// [`sea_orm::DatabaseTransaction`](sea_orm::DatabaseTransaction)s for incoming
+/// requests.
 #[derive(Debug)]
 pub struct DbTransactionMiddleware {
     db: DatabaseConnection,

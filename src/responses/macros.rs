@@ -1,8 +1,8 @@
 #[doc(hidden)]
 pub use paste::paste;
 
-/// Construct an [`ApiResponse`](derive@poem_openapi::ApiResponse) enum with some helper functions to
-/// easily create both success and error responses.
+/// Construct an [`ApiResponse`](derive@poem_openapi::ApiResponse) enum with
+/// some helper functions to easily create both success and error responses.
 ///
 /// #### Example
 /// ```
@@ -82,19 +82,22 @@ pub use paste::paste;
 /// }
 /// ```
 ///
-/// The `response!` macro in this example expands to a module with the specified name (`Test` in
-/// this case) that contains:
-/// 1. A `Response` type that you can return directly from your endpoint. This is basically a
-///    `poem::Result<ApiResponseEnum>` where `ApiResponseEnum` is an enum you could define using
-///    the [`ApiResponse`](derive@poem_openapi::ApiResponse) derive macro that contains all the
-///    variants you specified in the macro invocation (`Ok`, `Created`, `Conflict`, `Teapot` in
-///    this example).
-/// 2. For each variant a function that constructs a response which can be directly returned from
-///    your endpoint. The function name is always the snake_case version of the variant's name.
-///    If the variant contains data or error details (like `Ok` and `Conflict` in this example),
-///    this function accepts exactly one parameter with the specified type.
+/// The `response!` macro in this example expands to a module with the specified
+/// name (`Test` in this case) that contains:
+/// 1. A `Response` type that you can return directly from your endpoint. This
+///    is basically a `poem::Result<ApiResponseEnum>` where `ApiResponseEnum` is
+///    an enum you could define using the
+///    [`ApiResponse`](derive@poem_openapi::ApiResponse) derive macro that
+///    contains all the variants you specified in the macro invocation (`Ok`,
+///    `Created`, `Conflict`, `Teapot` in this example).
+/// 2. For each variant a function that constructs a response which can be
+///    directly returned from your endpoint. The function name is always the
+///    snake_case version of the variant's name. If the variant contains data or
+///    error details (like `Ok` and `Conflict` in this example), this function
+///    accepts exactly one parameter with the specified type.
 ///
-/// The signature of the generated module for this example would look roughly like this:
+/// The signature of the generated module for this example would look roughly
+/// like this:
 /// ```
 /// mod Test {
 /// #   pub type Data = ();
@@ -350,7 +353,7 @@ macro_rules! __response__raw_fn {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __response__fn {
-    ($name:ident, $var:ident, , ) => {
+    ($name:ident, $var:ident, ,) => {
         $crate::responses::macros::paste! {
             pub fn [< $var:snake >]<A>() -> Response<A> {
                 ::std::result::Result::Ok(self::raw::[< $var:snake >]().into())
@@ -364,14 +367,14 @@ macro_rules! __response__fn {
             }
         }
     };
-    ($name:ident, $var:ident, error, ) => {
+    ($name:ident, $var:ident,error,) => {
         $crate::responses::macros::paste! {
             pub fn [< $var:snake >]<A>() -> Response<A> {
                 ::std::result::Result::Ok(self::raw::[< $var:snake >]().into())
             }
         }
     };
-    ($name:ident, $var:ident, error, $details:ty) => {
+    ($name:ident, $var:ident,error, $details:ty) => {
         $crate::responses::macros::paste! {
             pub fn [< $var:snake >]<A>(details: $details) -> Response<A> {
                 ::std::result::Result::Ok(self::raw::[< $var:snake >](details).into())
