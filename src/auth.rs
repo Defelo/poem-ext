@@ -1,9 +1,11 @@
-/// Define a custom authorization dependency based on [`poem_openapi::auth::Bearer`] that uses a
-/// custom function to perform authorization.
+/// Define a custom authorization dependency based on
+/// [`poem_openapi::auth::Bearer`] that uses a custom function to perform
+/// authorization.
 ///
-/// To use this macro, you need both a tuple like struct that only contains the type for
-/// a successful authorization (e.g. a struct with information about the authenticated user)
-/// and a function that taks a request and a bearer token to check authorization.
+/// To use this macro, you need both a tuple like struct that only contains the
+/// type for a successful authorization (e.g. a struct with information about
+/// the authenticated user) and a function that taks a request and a bearer
+/// token to check authorization.
 ///
 /// #### Example
 /// ```
@@ -58,8 +60,8 @@ macro_rules! custom_auth {
     ($auth:path, $checker:expr) => {
         #[::poem::async_trait]
         impl<'a> ::poem_openapi::ApiExtractor<'a> for $auth {
-            const TYPE: ::poem_openapi::ApiExtractorType =
-                ::poem_openapi::ApiExtractorType::SecurityScheme;
+            const TYPES: &'static [::poem_openapi::ApiExtractorType] =
+                &[::poem_openapi::ApiExtractorType::SecurityScheme];
 
             type ParamType = ();
             type ParamRawType = ();
