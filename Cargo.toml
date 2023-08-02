@@ -6,7 +6,7 @@ license = "MIT"
 documentation = "https://docs.rs/poem-ext/"
 repository = "https://github.com/Defelo/poem-ext"
 edition = "2021"
-rust-version = "1.65.0"
+rust-version = "1.67.0"
 
 [features]
 default = ["sea-orm", "shield", "serde"]
