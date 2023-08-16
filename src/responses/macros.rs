@@ -57,6 +57,7 @@ pub use paste::paste;
 ///     /// Data conflicts with stuff
 ///     Conflict(409, error) => ConflictDetails,
 ///     /// I'm a teapot
+///     /// multiline doc comment
 ///     Teapot(418, error),
 ///     ..OtherResponse, // include OtherResponse and add From<OtherResponse> impls
 /// });
@@ -130,7 +131,7 @@ pub use paste::paste;
 macro_rules! response {
     ($vis:vis $name:ident = {
         $(
-            $(#[doc = $doc:literal])?
+            $(#[doc = $doc:literal])*
             $var:ident($status:expr $(,$error:ident)?) $(=> $data:ty)?,
         )*
         $(
@@ -152,7 +153,7 @@ macro_rules! response {
                     #[derive(::std::fmt::Debug)]
                     pub enum $name {
                         $(
-                            $(#[doc = $doc])?
+                            $(#[doc = $doc])*
                             $var(::poem_openapi::payload::Json<[< __ $name __ $var >]>),
                         )*
                         $(
@@ -184,11 +185,7 @@ macro_rules! response {
                                 responses: vec![
                                     $(
                                         ::poem_openapi::registry::MetaResponse {
-                                            description: {
-                                                let mut description = "";
-                                                $(description = $doc;)?
-                                                description
-                                            },
+                                            description: ::std::concat!($($doc, "\n"),*),
                                             status: ::std::option::Option::Some($status),
                                             content: <::poem_openapi::payload::Json<[< __ $name __ $var >]> as ::poem_openapi::ResponseContent>::media_types(),
                                             headers: vec![],
@@ -217,11 +214,7 @@ macro_rules! response {
                             use ::poem_openapi::__private::poem::IntoResponse;
                             let error_msg: ::std::option::Option<&str> = match resp {
                                 $(
-                                    $name::$var(_) => ::std::option::Option::Some({
-                                        let mut description = "";
-                                        $(description = $doc;)?
-                                        description
-                                    }),
+                                    $name::$var(_) => ::std::option::Option::Some(::std::concat!($($doc, "\n"),*)),
                                 )*
                                 $(
                                     $name::[< __Include__ $($include)__+ >](inner) => return ::poem_openapi::__private::poem::Error::from(inner),
