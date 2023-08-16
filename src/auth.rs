@@ -94,8 +94,8 @@ macro_rules! custom_auth {
                 );
             }
 
-            fn security_scheme() -> ::std::option::Option<&'static str> {
-                ::std::option::Option::Some(::std::stringify!($auth))
+            fn security_schemes() -> ::std::vec::Vec<&'static str> {
+                ::std::vec![::std::stringify!($auth)]
             }
         }
     };
@@ -110,7 +110,7 @@ mod tests {
 
     #[test]
     fn test_scheme_name() {
-        assert_eq!(UserAuth::security_scheme(), Some("UserAuth"));
+        assert_eq!(UserAuth::security_schemes(), vec!["UserAuth"]);
     }
 
     async fn check_request(authorization: Option<&str>) -> Result<UserAuth, u16> {
