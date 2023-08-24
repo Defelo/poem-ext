@@ -4,12 +4,16 @@ updates:
     directory: /
     schedule:
       interval: daily
+    groups:
+      actions:
+        patterns: ["*"]
+
   - package-ecosystem: cargo
     directory: /
     schedule:
       interval: daily
-    ignore:
+    ignore:  # for libs only
       - dependency-name: "*"
-        update-types:  # for libs only
+        update-types:
           - "version-update:semver-patch"
           - "version-update:semver-minor"
