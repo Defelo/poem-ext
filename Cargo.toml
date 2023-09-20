@@ -1,6 +1,6 @@
 [package]
 name = "poem-ext"
-version = "0.9.3"
+version = "0.9.4"
 description = "Extension crate for poem/poem-openapi"
 license = "MIT"
 documentation = "https://docs.rs/poem-ext/"
