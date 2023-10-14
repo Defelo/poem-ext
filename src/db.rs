@@ -31,7 +31,7 @@
 //!     .with(DbTransactionMiddleware::new(db_connection));
 //! ```
 
-use std::sync::Arc;
+use std::{fmt::Debug, sync::Arc};
 
 use poem::{async_trait, Endpoint, IntoResponse, Middleware, Response};
 use sea_orm::{DatabaseConnection, DatabaseTransaction, TransactionTrait};
@@ -41,18 +41,41 @@ use crate::responses::internal_server_error;
 /// Param type to use in endpoints that need a database transaction.
 pub type DbTxn = Arc<DatabaseTransaction>;
 
+/// A function that checks if a response is successful.
+pub type CheckFn = Arc<dyn Fn(&Response) -> bool + Send + Sync>;
+
 /// A middleware for automatically creating and managing
 /// [`sea_orm::DatabaseTransaction`](sea_orm::DatabaseTransaction)s for incoming
 /// requests.
-#[derive(Debug)]
 pub struct DbTransactionMiddleware {
     db: DatabaseConnection,
+    check_fn: Option<CheckFn>,
+}
+
+impl Debug for DbTransactionMiddleware {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DbTransactionMiddleware")
+            .field("db", &self.db)
+            // .field("check_fn", &self.check_fn) // Can't implement this because it can't really be debugged.
+            .finish()
+    }
 }
 
 impl DbTransactionMiddleware {
     /// Create a new DbTransactionMiddleware.
     pub fn new(db: DatabaseConnection) -> Self {
-        Self { db }
+        Self { db, check_fn: None }
+    }
+
+    /// Adds a custom filter function to the middleware.
+    pub fn with_filter<F>(self, check_fn: F) -> Self
+    where
+        F: Fn(&Response) -> bool + Send + Sync + 'static,
+    {
+        Self {
+            db: self.db,
+            check_fn: Some(Arc::new(check_fn)),
+        }
     }
 }
 
@@ -63,15 +86,33 @@ impl<E: Endpoint> Middleware<E> for DbTransactionMiddleware {
         DbTransactionMwEndpoint {
             inner: ep,
             db: self.db.clone(),
+            check_fn: self.check_fn.clone(),
         }
     }
 }
 
 #[doc(hidden)]
-#[derive(Debug)]
 pub struct DbTransactionMwEndpoint<E> {
     inner: E,
     db: DatabaseConnection,
+    check_fn: Option<CheckFn>,
+}
+
+impl<E> Debug for DbTransactionMwEndpoint<E> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DbTransactionMwEndpoint")
+            .field("inner", &"...")
+            .field("db", &self.db)
+            .field(
+                "check_fn",
+                &if self.check_fn.is_some() {
+                    "Some(...)"
+                } else {
+                    "None"
+                },
+            )
+            .finish()
+    }
 }
 
 #[async_trait]
@@ -88,10 +129,16 @@ impl<E: Endpoint> Endpoint for DbTransactionMwEndpoint<E> {
         match result {
             Ok(resp) => {
                 let resp = resp.into_response();
-                if resp.is_success() {
-                    txn.commit().await.map_err(internal_server_error)?;
-                } else {
+                if let Some(check_fn) = &self.check_fn {
+                    if check_fn(&resp) {
+                        txn.commit().await.map_err(internal_server_error)?;
+                    } else {
+                        txn.rollback().await.map_err(internal_server_error)?;
+                    }
+                } else if resp.status().is_server_error() || resp.status().is_client_error() {
                     txn.rollback().await.map_err(internal_server_error)?;
+                } else {
+                    txn.commit().await.map_err(internal_server_error)?;
                 }
                 Ok(resp)
             }
