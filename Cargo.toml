@@ -15,7 +15,7 @@ shield = ["dep:tokio-shield"]
 serde = ["dep:serde"]
 
 [dependencies]
-itertools = { version = "0.11.0", default-features = false, features = ["use_std"] }
+itertools = { version = "0.12.0", default-features = false, features = ["use_std"] }
 paste = { version = "1.0.12", default-features = false }
 poem = { version = "1.3.55", default-features = false }
 poem-openapi = { version = "3.0.2", default-features = false }
